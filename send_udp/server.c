@@ -7,8 +7,12 @@
 #include <netinet/in.h> 
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include <signal.h>
+
 
 #define SERVPORT 6785
+uint64_t pkt_count = 0;
+uint64_t byt_count = 0;
 
 
 void hex_printf(unsigned char *str, int len)
@@ -27,6 +31,11 @@ void hex_printf(unsigned char *str, int len)
 
 }
 
+void show(int sig)
+{
+	printf("Recived packet: %ld, bytes: %ld\n", pkt_count, byt_count);
+	exit(0);
+}
 
 int main(int argc, char **argv)
 {
@@ -35,6 +44,8 @@ int main(int argc, char **argv)
     int sockfd;
 	uint16_t port = 6785;
     struct sockaddr_in my_addr;
+
+	signal(SIGINT, show);
 
 	for( i = 1; i< argc; i++) {
         if(strcmp(argv[i],"-p") == 0) {
@@ -59,15 +70,19 @@ int main(int argc, char **argv)
     }
 	printf("server start, bind port: %d\n", port);
     socklen_t addrlen = sizeof(struct sockaddr_in);
+	
     while (1) {
         res = recvfrom(sockfd, buffer, sizeof(buffer), 0, (struct sockaddr *)&my_addr, &addrlen);
-        printf("received a connection from %s \n", inet_ntoa(my_addr.sin_addr));
+        //printf("received a connection from %s \n", inet_ntoa(my_addr.sin_addr));
 
-        buffer[res] = '\0';
-        printf("read %d bytes:\n", res);
-		hex_printf(buffer, res);
+        //buffer[res] = '\0';
+        //printf("read %d bytes:\n", res);
+		//hex_printf(buffer, res);
+		memset(buffer, 0x00, sizeof(buffer));
+		pkt_count++;
+		byt_count += res;
 
-        res = sendto(sockfd, buffer, res, 0, (struct sockaddr *)&my_addr, addrlen);
+        //res = sendto(sockfd, buffer, res, 0, (struct sockaddr *)&my_addr, addrlen);
     }
     close(sockfd);
 } 

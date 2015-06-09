@@ -20,6 +20,12 @@
 #include "pkt_buff.h"
 #include "udp.h"
 
+#include <linux/if_ether.h>
+#include <linux/ip.h>                                                                                
+#include <linux/udp.h>
+#include <linux/tcp.h>
+
+
 int over_sized_packets  = 0;
 int total_files_num = 0;
 static pthread_t  open_file_ctrl;
@@ -55,16 +61,33 @@ int send_to(u_char *pktdata, uint32_t pktlen)
             (struct sockaddr *)&collect.addr, sizeof(collect.addr));
 
 	if (res == pktlen) {
-		printf("[%d]send pkt len: %d\n", pkt_count++, pktlen);
+        pkt_count++;
+		//printf("[%d]send pkt len: %d\n", pkt_count, pktlen);
 	}
     return res;
 }
 
+#if USE_BUF
+
+#define BUF_MAX	4096
+static u_char buffer[BUF_MAX] = {0};
+static uint32_t buf_len = 0;
+
+#endif
 void echo(int b_index)
 {
     file_cache_t *fct;
     u_char *pktdata;
     uint32_t pktlen;
+    uint32_t offset;
+    uint32_t datalen;
+
+    //struct ethhdr *eth;
+    struct iphdr *ip;
+    //struct udphdr *udp;
+    struct tcphdr *tcp;
+    u_char *payload;
+
 
     fct  = (file_cache_t *) &fifo_pcap_cache[b_index].pcap_cache_trace;
 
@@ -74,9 +97,45 @@ void echo(int b_index)
             goto end_of_trace;
         }
 
-        assert(pktlen < 8192);
+		//eth = (struct ethhdr*) pktdata;
+		ip = (struct iphdr *)(pktdata + sizeof(struct ethhdr));
+        int iplen = ntohs(ip->tot_len);
+        switch (ip->protocol) {
+            case 6: //tcp
+		        tcp = (struct tcphdr *)((char *)ip + 4 * ip->ihl);
+                offset = 4 * ip->ihl + 4 * tcp->doff;
+                datalen = iplen - offset;
+                break;
+            case 17:    //udp
+		        //udp = (struct udphdr *)((char *)ip + 4 * ip->ihl);
+                offset = 4 * ip->ihl + sizeof(struct udphdr);
+                datalen = iplen - offset;
+                break; 
+            default: 
+                continue;
+        }
+		if (datalen == 0) continue;
 
-        send_to(pktdata, pktlen);
+        if (pktlen != datalen + sizeof(struct ethhdr) + offset){
+            printf("error pktlen: %d, data: %ld\n", pktlen, datalen + sizeof(struct ethhdr) + offset);
+            exit(0);
+        }
+        payload = pktdata + sizeof(struct ethhdr) + offset;
+
+		send_to(payload, datalen);
+
+#if USE_BUF
+		if (buf_len + datalen < BUF_MAX) {
+			memcpy(buffer, payload, datalen);
+			buf_len += datalen;
+			continue;
+		}
+        send_to(buffer, buf_len);
+
+		buf_len = 0;
+		memset(buffer, 0, sizeof(buffer));
+#endif
+		
     }
 end_of_trace:
     printf("*************^^^^^^^^^^^^^************\n");

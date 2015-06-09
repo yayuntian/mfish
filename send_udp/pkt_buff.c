@@ -52,13 +52,13 @@ u_char *prep_next_skb(file_cache_t *fct,u_int32_t *pktlen, int i)
 
     //! move the packet
     FOFFSET(hdr->ncl_len);
-
+#if 0
     if (caplen >= MaxPacketLen) {
         printf("Wrong length %u at offset %lu in %s.\n", caplen, fct->offset, traceName[i]);
         //over_sized_packets++;
         //goto next_packet;
     }
-
+#endif
     if (fct->offset > fct->size) {
         if (fct->offset < (fct->size + MaxPacketLen)) {
             printf("Last packet is thrown away in %s.\n", traceName[i]);

@@ -1,6 +1,6 @@
 .PHONY: clean
 
-#CFLAGS = -DPKT_ENDLESS
+CFLAGS = -DPKT_ENDLESS
 
 all: tx_pcap server
 

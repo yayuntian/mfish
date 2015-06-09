@@ -213,7 +213,5 @@ void open_files(void *cpu_id)
         printf("Can NOT open file %s.\n", filename);
         exit(0);
     }
-
-    pthread_exit(NULL);
 }
 #endif
