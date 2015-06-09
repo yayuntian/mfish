@@ -22,6 +22,7 @@ int main()
     my_addr.sin_family = AF_INET; 
     my_addr.sin_port = htons(SERVPORT);
     my_addr.sin_addr.s_addr = INADDR_ANY;
+    //my_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
     //bzero(&(my_addr.sin_zero), 8); 
 
     if (bind(sockfd, (struct sockaddr *)&my_addr, sizeof(struct sockaddr)) == -1){ 
@@ -29,14 +30,15 @@ int main()
         exit(1);
     }
 
-    int addrlen=sizeof(struct sockaddr_in);
-    res = recvfrom(sockfd, buffer, sizeof(buffer), 0, (struct sockaddr *)&my_addr, &addrlen);
-    printf("received a connection from %s \n", inet_ntoa(my_addr.sin_addr));
+    int addrlen = sizeof(struct sockaddr_in);
+    while (1) {
+        res = recvfrom(sockfd, buffer, sizeof(buffer), 0, (struct sockaddr *)&my_addr, &addrlen);
+        printf("received a connection from %s \n", inet_ntoa(my_addr.sin_addr));
 
-    buffer[res] = '\0';
-    printf("read %d bytes: %s\n", res, buffer);
+        buffer[res] = '\0';
+        printf("read %d bytes: %s\n", res, buffer);
 
-    res = sendto(sockfd, buffer, res, 0, (struct sockaddr *)&my_addr, addrlen);
-
+        res = sendto(sockfd, buffer, res, 0, (struct sockaddr *)&my_addr, addrlen);
+    }
     close(sockfd);
 } 

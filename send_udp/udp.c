@@ -1,12 +1,6 @@
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <string.h>
-#include <signal.h>
-#include <errno.h>
+#include "udp.h"
+
+
 
 void maximize_socket_buffer(int sock_fd, int buf_type)
 {
@@ -38,49 +32,50 @@ void maximize_socket_buffer(int sock_fd, int buf_type)
     }
 }
 
-void main(int argc, char* argv[])
+CollectorAddr collect;
+int initUdp(char *addr, uint16_t port)
 {
-    int sockfd;
     int sockopt = 1;
-    struct sockaddr_in address;
-    int res;
-    char buffer[1024] = {0};
 
-    memset(&address, 0, sizeof(struct sockaddr_in));
-
-    char *addr = "127.0.0.1";
-    if (argc >=2) {
-        printf("send to address: %s\n", argv[1]);
-        addr = argv[1];
-    }
-
-    address.sin_addr.s_addr = inet_addr(addr);
-    address.sin_family      = AF_INET;
-    address.sin_port        = (uint16_t)htons(6785);
-
-    sockfd = socket(AF_INET, SOCK_DGRAM, 0);
-    if (sockfd == -1) {
-        printf("Fatal error while creating socket");
-        return;
-    }
 #if 0
-    setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR,
-            (char *)&sockopt, sizeof(sockopt));
-    maximize_socket_buffer(sockfd, SO_SNDBUF);
-#endif
-    while (1) {
-    printf("please input str >>");
-    gets(buffer);
-
-    int len = sizeof(address);
-    res = sendto(sockfd, buffer, strlen(buffer) + 1, 0,
-        (struct sockaddr *)&address, len);
-
-    res = recvfrom(sockfd, buffer, sizeof(buffer), 0, (struct sockaddr *)&address, &len);
-
-    buffer[res] = '\0';
-    printf("read %d bytes: %s\n", res, buffer);
+    struct hostent *hostAddr;
+    struct in_addr dstAddr;
+    if ((hostAddr = gethostbyname(addr)) == NULL) {
+        printf("Unable to resolve address '%s'\n", addr);
+        return(-1);
     }
-    close(sockfd);
-    return;
+    memcpy(&dstAddr.s_addr, hostAddr->h_addr_list[0], hostAddr->h_length);
+#endif
+    memset(&collect, 0, sizeof(CollectorAddr));
+    collect.addr.sin_addr.s_addr = inet_addr(addr);
+    collect.addr.sin_family      = AF_INET;
+    collect.addr.sin_port        = (uint16_t)htons(port);
+
+
+    collect.sockFd = socket(AF_INET, SOCK_DGRAM, 0);
+    if (collect.sockFd == -1) {
+        printf("Fatal error while creating socket");
+        return -1;
+    }
+
+    setsockopt(collect.sockFd, SOL_SOCKET, SO_REUSEADDR,
+            (char *)&sockopt, sizeof(sockopt));
+
+    maximize_socket_buffer(collect.sockFd, SO_SNDBUF);
+
+    return(0);
 }
+
+#if 0
+void main()
+{
+    char* addr = "127.0.0.1";
+    uint16_t port = 2055;
+    char *str = "just test udp.";
+
+    initUdp(addr, port);
+
+    send_to(collect.sockFd, str, sizeof(*str), 0,
+        (struct sockaddr *)&collect->addr, sizeof(collect->addr));
+}
+#endif
