@@ -17,6 +17,8 @@
 #include <sys/mman.h>
 #include <sys/wait.h>
 #include <pthread.h>
+#include <signal.h>
+
 #include "pkt_buff.h"
 #include "udp.h"
 
@@ -51,19 +53,30 @@ int mybind_cpu(int core)
 volatile int speed_loop = 0;
 #define IO_BATCH_SIZE 64
 
-static uint32_t pkt_count;
+static uint64_t pkt_count = 0;
+static uint64_t pkt_bytes = 0;
+
+
+void show(int sig)
+{
+	printf("Send packet: %ld, bytes: %ld\n", pkt_count, pkt_bytes);
+	exit(0);
+}
+
 
 int send_to(u_char *pktdata, uint32_t pktlen)
 {
     int res;
+    time_t timep;
 
     res = sendto(collect.sockFd, pktdata, pktlen, 0,
             (struct sockaddr *)&collect.addr, sizeof(collect.addr));
 
-	if (res == pktlen) {
-        pkt_count++;
-		//printf("[%d]send pkt len: %d\n", pkt_count, pktlen);
-	}
+    time(&timep);
+	pkt_bytes += res;
+    if((pkt_count++ & 0xffff) == 0x01)
+        printf("pkt_count %ld, bytes: %ld ----%s", pkt_count, pkt_bytes, ctime(&timep));
+
     return res;
 }
 
@@ -138,7 +151,7 @@ void echo(int b_index)
 		
     }
 end_of_trace:
-    printf("*************^^^^^^^^^^^^^************\n");
+    //printf("*************^^^^^^^^^^^^^************\n");
     release_pkt_buff(b_index);
 }
 
@@ -156,7 +169,7 @@ int sending_packets(int ifindex)
             return 0;
         }
         if (ready==1) {
-            printf("Processing buffer %d\n", i);
+            //printf("Processing buffer %d\n", i);
             echo(i);   //! releasing within echo()
 #ifdef PKT_ENDLESS
             i = (i+1) % total_files_num;
@@ -193,6 +206,8 @@ int main(int argc, char **argv)
     uint16_t port = 2055;
 
     iter_num = 1;   /* 1 time is enough */
+
+	signal(SIGINT, show);
 
     for( i = 1; i< argc; i++) {
         if(strcmp(argv[i], "-f") == 0) {

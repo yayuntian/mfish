@@ -1,14 +1,13 @@
 #include <stdio.h> 
 #include <stdlib.h>
 #include <errno.h>
-#include<unistd.h>
+#include <unistd.h>
 #include <string.h> 
 #include <sys/types.h> 
 #include <netinet/in.h> 
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <signal.h>
-
 
 #define SERVPORT 6785
 uint64_t pkt_count = 0;
@@ -70,17 +69,20 @@ int main(int argc, char **argv)
     }
 	printf("server start, bind port: %d\n", port);
     socklen_t addrlen = sizeof(struct sockaddr_in);
-	
+
     while (1) {
         res = recvfrom(sockfd, buffer, sizeof(buffer), 0, (struct sockaddr *)&my_addr, &addrlen);
         //printf("received a connection from %s \n", inet_ntoa(my_addr.sin_addr));
 
         //buffer[res] = '\0';
         //printf("read %d bytes:\n", res);
-		//hex_printf(buffer, res);
-		memset(buffer, 0x00, sizeof(buffer));
-		pkt_count++;
-		byt_count += res;
+        //hex_printf(buffer, res);
+        memset(buffer, 0x00, sizeof(buffer));
+        pkt_count++;
+        byt_count += res;
+        if ((pkt_count & 0xfff) == 0x01) {
+            printf("pkt: %ld, bytes: %ld\n", pkt_count, byt_count);
+        }
 
         //res = sendto(sockfd, buffer, res, 0, (struct sockaddr *)&my_addr, addrlen);
     }

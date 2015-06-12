@@ -31,7 +31,7 @@ u_char *prep_next_skb(file_cache_t *fct,u_int32_t *pktlen, int i)
     /* if end */
 //next_packet:
     if (fct->offset == fct->size) {
-        printf("LOAD FILE COMPLETE: %s\n", traceName[i]);
+        //printf("LOAD FILE COMPLETE: %s\n", traceName[i]);
         return NULL;
     }
     if (fct->offset > fct->size) {
@@ -219,7 +219,7 @@ int release_pkt_buff(int i)
             return 0;
         }
         fifo_pcap_cache[i].buffer_ready = 1;
-        printf("------ Buffer cache %d for %s is refresh.\n", i, traceName[i]);
+        //printf("------ Buffer cache %d for %s is refresh.\n", i, traceName[i]);
 
     }
 #else
