@@ -1,0 +1,14 @@
+{
+    "message": "[e2a005d3-ce2c-44b1-a35b-aefbf0aa5699] [http-nio-8081-exec-12] ^02-42-0A-17-00-9F|defaultPort|defaultName^ INFO (LogAspect.java logInfo 68) - REQUEST: ID = 19852382731397067, CLASS_METHOD = {com.ysten.ucs.controller.old.LoginController.doTVLogin}, ARGS = {screenId=%7B%22deviceGroupIds%22%3A%5B%223909%22%5D%2C%22userGroupIds%22%3A%5B%5D%2C%22districtCode%22%3A%22230100%22%2C%22abilities%22%3A%5B%22NxM%22%2C%224K-1%7Ccp-TENCENT%22%5D%2C%22businessGroupIds%22%3A%5B%5D%7D, password=null, sno=null, loginType=null, domain=230000_1, custId=157345137550, deviceMac=f0:9c:d7:08:65:bf, validateCode=null, header={x-real-ip=117.179.2.170, connection=upgrade, x-forwarded-for=117.179.2.170, host=ucs.taipan.hlja.bcs.ottcn.com:18079, content-length=413, appversionname=V8.2.0.0.0451.19.04.04, yauth=f3e9170ede96c0fde4ce10e5fab50e0d#54a49dcb#015177012131979f0:9c:d7:08:65:bfV8.2.0.0.0451.19.04.048200STB#V1.0, mac=f0:9c:d7:08:65:bf, platformid=Ystenplatform_HLJ_taipanAPK_20170327001, devicetype=STB, appversioncode=8200, deviceid=015177012131979, content-type=application/x-www-form-urlencoded, accept-encoding=gzip, user-agent=okhttp/3.12.0}, deviceCode=015177012131979, version=taipan8.2, ystenId=null}",
+    "fields": {
+      "area_id": 230000,
+      "service": "ucs-edge_ucs-hlj",
+      "topic_name": "hlj-log-topic",
+      "container": "9009e814656d",
+      "service_type": "tomcat-docker",
+      "task": "ucs-edge_ucs-hlj.3.27tubsc711mjnafdp5raa3evu",
+      "ip": "10.100.197.3",
+      "topic": "ucs"
+    },
+    "@timestamp": "2019-08-21T01:27:15.686Z"
+  }
