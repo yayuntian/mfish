@@ -4,6 +4,7 @@
 import sys
 import getopt
 import json
+import time
 from datetime import datetime
 from elasticsearch import Elasticsearch
 from elasticsearch import helpers
@@ -66,15 +67,21 @@ def bulk():
 
 
 def main(argv):
-    print(datetime.now())
     opt(argv)
-    for i in range(1000):
+
+    start_ts = int(time.time() * 1000)
+    for i in range(10000):
         bulk()
-        print(str(datetime.now()) + ' -> complete bulk count:', (i + 1) * g_count)
+        count = (i + 1) * g_count
+        print(str(datetime.now()) + ' -> complete bulk count:', count, 'rate:',  1000 * (count / (time.time() * 1000 - start_ts)))
 
 
 if __name__ == '__main__':
-    try:
-        main(sys.argv)
-    except KeyboardInterrupt as e:
-        print("KeyboardInterrupt")
+    # try:
+    #     main(sys.argv)
+    # except KeyboardInterrupt as e:
+    #     print("KeyboardInterrupt")
+
+
+    for i in range(256):
+        print("wget -T 1 -t 1 192.168.12.%d" % i)
