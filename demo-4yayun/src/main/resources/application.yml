@@ -1,0 +1,32 @@
+server:
+  port: 8080
+  compression:
+    enabled: true
+    mime-types: application/json
+    min-response-size: 1
+  tomcat:
+    basedir: /tomcat
+    accesslog:
+      enabled: true
+      buffered: true
+      directory: ./logs
+      file-date-format: _yyyy-MM-dd
+      pattern: '%h %t "%r" %s %b %D %I "%{X-Forwarded-For}i" "%{User-Agent}i" "%{Referer}i" "%{X-Real-IP}i"'
+      prefix: ${project.name}_accesslog
+      rename-on-rotate: false
+      request-attributes-enabled: false
+      rotate: true
+      suffix: .log
+spring:
+  application:
+    name: yayun
+  jackson:
+    default-property-inclusion: non_null
+  data:
+    mongodb:
+      uri: mongodb://36.155.71.183:10805/vgs_source?readPreference=secondaryPreferred
+#      uri: mongodb://192.168.19.17:27017/vgs_source?readPreference=secondaryPreferred
+
+systemParameters:
+  scheduling:
+    cron: 0 0/20 * * * ?

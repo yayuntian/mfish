@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration status="info">
+    <Properties>
+        <!--日志文件保存路径-->
+        <Property name="LOG_PATH">/data/logs/</Property>
+        <!--应用名称-->
+        <Property name="APP_NAME">yayun</Property>
+        <!--日志文件最大容量，超过最大容量后日志文件分割-->
+        <Property name="MAX_FILE_SIZE">50MB</Property>
+        <!--分割日志的最大次数-->
+        <Property name="I_MAX">40</Property>
+        <!--日志输出模版-->
+        <Property name="PATTERN_LAYOUT">%d [%X{traceId}] [%t] %level (%F %M %L) - %msg%n</Property>
+    </Properties>
+    <appenders>
+        <RollingFile name="ERROR-FILE"
+                     fileName="${LOG_PATH}/${APP_NAME}_error.log"
+                     filePattern="${LOG_PATH}/$${date:yyyy-MM}/${APP_NAME}_error_%d{yyyy-MM-dd}_%i.log">
+            <Filters>
+                <ThresholdFilter level="ERROR" onMatch="ACCEPT"
+                                 onMismatch="DENY"/>
+            </Filters>
+            <PatternLayout pattern="${PATTERN_LAYOUT}"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy modulate="true" interval="1"/>
+                <SizeBasedTriggeringPolicy size="${MAX_FILE_SIZE}"/>
+            </Policies>
+            <DefaultRolloverStrategy max="${I_MAX}"/>
+        </RollingFile>
+        <RollingFile name="LOG-File"
+                     fileName="${LOG_PATH}/${APP_NAME}_info.log"
+                     filePattern="${LOG_PATH}/$${date:yyyy-MM}/${APP_NAME}_info_%d{yyyy-MM-dd}_%i.log">
+            <Filters>
+                <ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
+            </Filters>
+            <PatternLayout pattern="${PATTERN_LAYOUT}"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy modulate="true" interval="1"/>
+                <SizeBasedTriggeringPolicy size="${MAX_FILE_SIZE}"/>
+            </Policies>
+            <DefaultRolloverStrategy max="${I_MAX}"/>
+        </RollingFile>
+        <!-- 这个输出控制台的配置 -->
+        <Console name="CONSOLE" target="SYSTEM_OUT">
+            <ThresholdFilter level="info" onMatch="ACCEPT" onMismatch="DENY"/>
+            <!-- 输出日志的格式 -->
+            <PatternLayout pattern="${PATTERN_LAYOUT}"/>
+        </Console>
+    </appenders>
+    <loggers>
+        <Root level="info" includeLocation="true">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="LOG-File"/>
+            <appender-ref ref="ERROR-FILE"/>
+        </Root>
+    </loggers>
+</configuration>
