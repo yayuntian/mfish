@@ -1,65 +1,43 @@
-# -*- coding:utf-8 -*-
+#!/usr/bin/env python
+# -*- coding: UTF-8 -*-
 
-import hashlib
-import logging
+
 import os
-
-import redis
+import exifread
+from datetime import datetime
 from PIL import Image
-
-suffix = ('.gif', '.jpg', '.jpeg', '.png', '.bmp', '.svg')
-
-# g = os.walk('D:\\备份\\nanjing')
-g = os.walk('D:\\备份')
-r = redis.Redis(host='192.168.12.53', port=6379, db=1)
-
-logging.basicConfig(level=logging.INFO,
-                    filename='./log.txt',
-                    filemode='w',
-                    format='%(asctime)s - %(filename)s[line:%(lineno)d] - %(levelname)s: %(message)s')
-
-def md5(fname):
-    hash_md5 = hashlib.md5()
-    with open(fname, "rb") as f:
-        for chunk in iter(lambda: f.read(4096), b""):
-            hash_md5.update(chunk)
-    return hash_md5.hexdigest()
+import time
 
 
-def list():
-    count = 0
-    for path, dir, file in g:
-        print("==============", path, dir, "=============");
-        for f in file:
-            fname = os.path.join(path, f)
-            if f.startswith(".") or os.path.splitext(f)[1].lower() not in suffix:
-                print("ingore file: ", fname)
-                logging.info("ignore file: %s", fname)
-                continue
-            count += 1
-
-            print(count, fname)
-            m = md5(fname)
-            if r.exists(m):
-                ex = r.get(m).decode("utf-8")
-                tmp = fname
-                if len(ex) > len(fname):
-                    tmp = fname
-                else:
-                    tmp = ex
-                if os.path.exists(tmp):
-                    os.remove(tmp)
-                    logging.warning("remove %s", tmp)
-                    continue
-            r.set(m, fname)
+VOLPATH = "/Volumes/F/百度云同步盘/来自：iPhone/"
 
 
-def imageInfo(fname):
-    img = Image.open(fname)
-    width, height = img.size
-    print(width, height)
+def imgDate(fn):
+    "returns the image date from image (if available)\nfrom Orthallelous"
+    std_fmt = '%Y:%m:%d %H:%M:%S.%f'
+    # for subsecond prec, see doi.org/10.3189/2013JoG12J126 , sect. 2.2, 2.3
+    tags = [(36867, 37521),  # (DateTimeOriginal, SubsecTimeOriginal)
+            (36868, 37522),  # (DateTimeDigitized, SubsecTimeOriginal)
+            (306, 37520), ]  # (DateTime, SubsecTime)
+    exif = Image.open(fn)._getexif()
+    print(exif)
 
 
-if __name__ == "__main__":
-    r.flushdb()
-    list()
+
+
+def main(file):
+    # im = Image.open(file)
+    # print(im._getexif())
+
+    f = open(file, 'rb')
+    tags = exifread.process_file(f)
+
+    # print('拍摄时间：', tags['EXIF DateTimeOriginal'])
+
+    for tag in tags.keys():
+        print("Key: {}, value {}".format(tag, tags[tag]))
+
+
+if __name__ == '__main__':
+    # main('/Users/eric/Downloads/20091003_164142.jpg')
+    imgDate('/Users/eric/Downloads/20091003_164142.jpg')

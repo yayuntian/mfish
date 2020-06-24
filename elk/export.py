@@ -1,25 +1,29 @@
 import json
 from elasticsearch import Elasticsearch
 
+
+
+# pip3 install  elasticsearch==7.0.2  -i https://mirrors.aliyun.com/pypi/simple/
+
 es = Elasticsearch(hosts="http://elasticsearch:9200/")
 query_json = {
     "query": {
         "bool": {
             "must": [
                 {
+                "match_phrase": {
+                    "app_id.keyword": {
+                      "query": "9t5s5iaq"
+                    }
+                  }
+                },
+                {
                     "range": {
                         "@timestamp": {
-                            "gte": "2019-10-28T18:00:34.402Z",
-                            "lte": "2019-10-28T18:14:44.924Z"
+                            "format": "strict_date_optional_time",
+                            "gte": "2020-04-14T07:00:00.000Z",
+                            "lte": "2020-04-14T07:59:59.000Z"
                         }
-                    }
-                }
-            ],
-            "filter": [
-                {
-                    "multi_match": {
-                        "type": "phrase",
-                        "query": "8205"
                     }
                 }
             ]
@@ -29,7 +33,7 @@ query_json = {
 
 
 def export():
-    query = es.search(index='tms-all', body=query_json, scroll='5m', size=100)
+    query = es.search(index='new-apm-alive-2020.04.14', body=query_json, scroll='5m', size=100)
 
     results = query['hits']['hits']
     total = query['hits']['total']
